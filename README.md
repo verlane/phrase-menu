@@ -26,6 +26,8 @@ A dynamic **AutoHotkey** menu system that allows you to organize and run various
 
 ## Example
 
+<img src="https://github.com/user-attachments/assets/c2c35dde-1669-45c1-8a9f-a20454c17cb7" height="141">
+
 Below is a fully working example showing how to use the classes:
 
 ```autohotkey
