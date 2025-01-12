@@ -31,27 +31,25 @@ phraseMenu := ClassPhraseMenu()
 phraseMenu.AddPhrase("p", "Prompt")
 phraseMenu.AddPhrase("pa", "Prompt A")
 phraseMenu.AddPhrase("pb", "Prompt B")
+phraseMenu.AddPhrase("-")
 phraseMenu.AddPhrase("w", "Web")
 phraseMenu.AddPhrase("wg", "Google", "https://www.google.com")
-phraseMenu.AddPhrase("w-") ; separator
 phraseMenu.AddPhrase("wy", "YouTube", "https://www.youtube.com")
-phraseMenu.AddPhrase("-") ; separator
 phraseMenu.AddPhrase("n", "Open Notepad", () => Run("notepad.exe"))
 phraseMenu.AddPhrase("e", "Press Win+E", () => Send("#e"))
 phraseMenu.AddPhrase("m", "Show MsgBox", () => MsgBox("Function callback!"))
-phraseMenu.Show()
 
 ^!f:: {
   phraseMenu.Show()
 }
 
-::p::
-::pa::
-::pb::
-::w::
-{
-  shortcut := RegExReplace(A_ThisHotkey, "i)[^0-9a-z]", "")
-  phraseMenu.RunByShortcut(shortcut)
+for k, v in phraseMenu.phraseShortcutMap {
+  if (InStr(k, '-') || k == '') {
+    continue
+  }
+  Hotstring("::" . k, (*) => (
+    phraseMenu.RunByShortcut(SubStr(A_ThisHotkey, 3))
+  ))
 }
 ```
 

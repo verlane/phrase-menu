@@ -12,7 +12,7 @@ Class ClassPhrase extends ClassOrderedMap {
   }
 
   Run() {
-    if (Type(this.body) = "Func") {
+    if (Type(this.body) == "Func" || Type(this.body) == "Closure") {
       this.body.Call()
       return
     }
