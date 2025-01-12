@@ -3,93 +3,82 @@
 ; Author: BSB
 ; --------------------
 Class ClassPhraseMenu {
-  __New(phraseList) {
-    this.topMenu := Menu()
-    this.phraseMenuMap := Map()
+  __New() {
+    this.topPhrase := ClassPhrase()
     this.phraseShortcutMap := Map()
-    ; Build menu
-    this.AddMenuItems(this.topMenu, phraseList)
   }
 
-  ; Show top-level menu
   Show() {
-    this.topMenu.Show()
+    this.myMenu := this.CreateMenuFromOrderedMap(this.topPhrase)
+    this.myMenu.Show()
   }
 
-  ; Run item by typed shortcut (e.g., "b1" -> "&b &1")
+  AddPhrase(key, title := "", body := "") {
+    keyParts := StrSplit(key, "")
+    phrase := ClassPhrase(title, body)
+    this.phraseShortcutMap[key] := phrase
+    this.AddToOrderedMapRecursive(this.topPhrase, keyParts, phrase)
+  }
+
   RunByShortcut(shortcut) {
-    shortcut := RegExReplace(StrLower(shortcut), "[^a-zA-Z0-9]", "")
-    local converted := ""
-    for i, ch in StrSplit(shortcut)
-      converted .= "&" . ch . " "
-    if (this.phraseShortcutMap.Has(converted)) {
-      this.phraseShortcutMap[converted].Run()
+    if (this.phraseShortcutMap.Has(shortcut)) {
+      phrase := this.phraseShortcutMap[shortcut]
+      if (phrase.keys.Length < 1) {
+        phrase.Run()
+        return
+      }
+    }
+
+    this.ExecScript("Sleep(50)`nSend('" . shortcut . "')")
+    this.Show()
+  }
+
+  ExecScript(script, wait := false) {
+    shell := ComObject("WScript.Shell")
+    exec := shell.Exec(A_AhkPath " /ErrorStdOut *")
+    exec.StdIn.Write("#NoTrayIcon`n" . script)
+    exec.StdIn.Close()
+    if wait
+      return exec.StdOut.ReadAll()
+  }
+
+  AddToOrderedMapRecursive(myOrderedMap, keyParts, message) {
+    if keyParts.Length = 0 {
+      return
+    }
+
+    currentKey := keyParts.RemoveAt(1)
+
+    if keyParts.Length = 0 {
+      myOrderedMap.Set(currentKey, message)
     } else {
-      MsgBox "Shortcut not found: " . converted
-    }
-  }
-
-  ; Recursively build menu/submenu
-  AddMenuItems(targetMenu, items, level := 1, accumKey := "") {
-    local shortcuts := StrSplit("zyxwvutsrqponmlkjihgfedcba0987654321")
-
-    for i, item in items {
-      nextItem := (i < items.Length) ? items[i + 1] : ""
-      prevItem := (i > 1) ? items[i - 1] : ""
-
-      if (level = 1)
-        accumKey := ""
-
-      if (!this.IsArrayType(item) && this.IsArrayType(nextItem)) {
-        continue
-      } else if this.IsArrayType(item) {
-        sub := Menu()
-        sc := this.GetShortcut(shortcuts, prevItem.title)
-        accumKey .= sc
-        this.AddMenuItems(sub, item, level + 1, accumKey)
-        targetMenu.Add(sc . this.ShrinkTitle(prevItem.title), sub)
-      } else {
-        if (item.title = "") {
-          targetMenu.Add("") ; separator
-        } else {
-          sc := this.GetShortcut(shortcuts, item.title)
-          key := StrLower(accumKey . sc)
-          this.phraseShortcutMap[key] := item
-          targetMenu.Add(sc . this.ShrinkTitle(item.title), ObjBindMethod(this, "OnMenuItemClick"))
-        }
-        if !this.phraseMenuMap.Has(targetMenu.Handle)
-          this.phraseMenuMap[targetMenu.Handle] := []
-        this.phraseMenuMap[targetMenu.Handle].Push(item)
+      if !myOrderedMap.Has(currentKey) {
+        myOrderedMap.Set(currentKey, ClassPhrase())
       }
+      this.AddToOrderedMapRecursive(myOrderedMap.Get(currentKey), keyParts, message)
     }
   }
 
-  OnMenuItemClick(item, index, myMenu, *) {
-    local items := this.phraseMenuMap[myMenu.Handle]
-    if (index <= items.Length) {
-      items[index].Run()
+  StrRepeat(str, count) {
+    result := ""
+    Loop count {
+      result .= str
     }
+    return result
   }
 
-  IsArrayType(o) {
-    return (Type(o) = "Array")
+  CreateMenuFromOrderedMap(orderedMap) {
+    myMenu := Menu()
+    orderedMap.ForEach((key, phrase) => this.CreateMenuEntry(myMenu, key, phrase))
+    return myMenu
   }
 
-  ShrinkTitle(t) {
-    t := (StrLen(t) > 30) ? SubStr(t, 1, 30) . "..." : t
-    return RegExReplace(t, "^`&([A-Za-z0-9]) ")
-  }
-
-  GetShortcut(shortcuts, title) {
-    if (RegExMatch(title, "^`&([A-Za-z0-9]) ", &m)) {
-      for i, v in shortcuts {
-        if (v = m[1]) {
-          shortcuts.RemoveAt(i)
-          break
-        }
-      }
-      return m[0]
+  CreateMenuEntry(myMenu, key, phrase) {
+    if (phrase.keys.Length > 0) {
+      subMenu := this.CreateMenuFromOrderedMap(phrase)
+      myMenu.Add("&" key . " " . phrase.title, subMenu)
+    } else {
+      myMenu.Add("&" key . " " . phrase.title, (*) => phrase.Run())
     }
-    return (shortcuts.Length > 0) ? "&" . shortcuts.Pop() . " " : ""
   }
 }
