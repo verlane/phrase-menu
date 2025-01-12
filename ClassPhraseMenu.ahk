@@ -14,6 +14,7 @@ Class ClassPhraseMenu {
   }
 
   AddPhrase(key, title := "", body := "") {
+    key := Trim(key)
     keyParts := StrSplit(key, "")
     phrase := ClassPhrase(title, body)
     this.phraseShortcutMap[key] := phrase
@@ -67,6 +68,10 @@ Class ClassPhraseMenu {
     return result
   }
 
+  StrShrink(t) {
+    return (StrLen(t) > 30) ? SubStr(t, 1, 30) . "..." : t
+  }
+
   CreateMenuFromOrderedMap(orderedMap) {
     myMenu := Menu()
     orderedMap.ForEach((key, phrase) => this.CreateMenuEntry(myMenu, key, phrase))
@@ -76,9 +81,13 @@ Class ClassPhraseMenu {
   CreateMenuEntry(myMenu, key, phrase) {
     if (phrase.keys.Length > 0) {
       subMenu := this.CreateMenuFromOrderedMap(phrase)
-      myMenu.Add("&" key . " " . phrase.title, subMenu)
+      myMenu.Add("&" . key . " " . this.StrShrink(phrase.title), subMenu)
     } else {
-      myMenu.Add("&" key . " " . phrase.title, (*) => phrase.Run())
+      if (key == "-") {
+        myMenu.Add("")
+      } else {
+        myMenu.Add("&" . key . " " . this.StrShrink(phrase.title), (*) => phrase.Run())
+      }
     }
   }
 }

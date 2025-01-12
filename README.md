@@ -33,10 +33,13 @@ phraseMenu.AddPhrase("pa", "Prompt A")
 phraseMenu.AddPhrase("pb", "Prompt B")
 phraseMenu.AddPhrase("w", "Web")
 phraseMenu.AddPhrase("wg", "Google", "https://www.google.com")
+phraseMenu.AddPhrase("w-") ; separator
 phraseMenu.AddPhrase("wy", "YouTube", "https://www.youtube.com")
+phraseMenu.AddPhrase("-") ; separator
 phraseMenu.AddPhrase("n", "Open Notepad", () => Run("notepad.exe"))
 phraseMenu.AddPhrase("e", "Press Win+E", () => Send("#e"))
 phraseMenu.AddPhrase("m", "Show MsgBox", () => MsgBox("Function callback!"))
+phraseMenu.Show()
 
 ^!f:: {
   phraseMenu.Show()
