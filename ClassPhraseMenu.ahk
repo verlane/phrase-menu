@@ -44,13 +44,21 @@ Class ClassPhraseMenu {
   }
 
   AddToOrderedMapRecursive(myOrderedMap, keyParts, message) {
-    if keyParts.Length = 0 {
+    if (keyParts.Length == 0) {
+      return
+    }
+
+    str := ""
+    for i, value in keyParts {
+      str .= value
+    }
+    if (RegExMatch(str, "^\-")) { ; for seperator
+      myOrderedMap.Set(str, ClassPhrase())
       return
     }
 
     currentKey := keyParts.RemoveAt(1)
-
-    if keyParts.Length = 0 {
+    if (keyParts.Length == 0) {
       myOrderedMap.Set(currentKey, message)
     } else {
       if !myOrderedMap.Has(currentKey) {
@@ -83,7 +91,7 @@ Class ClassPhraseMenu {
       subMenu := this.CreateMenuFromOrderedMap(phrase)
       myMenu.Add("&" . key . " " . this.StrShrink(phrase.title), subMenu)
     } else {
-      if (key == "-") {
+      if (RegExMatch(key, "^\-")) {
         myMenu.Add("")
       } else {
         myMenu.Add("&" . key . " " . this.StrShrink(phrase.title), (*) => phrase.Run())
