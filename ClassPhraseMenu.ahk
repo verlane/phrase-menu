@@ -8,9 +8,13 @@ Class ClassPhraseMenu {
     this.phraseShortcutMap := Map()
   }
 
-  Show() {
+  Show(x := "", y := "") {
     this.myMenu := this.CreateMenuFromOrderedMap(this.topPhrase)
-    this.myMenu.Show()
+    if (x && y) {
+      this.myMenu.Show(x, y)
+    } else {
+      this.myMenu.Show()
+    }
   }
 
   AddPhrase(key, title := "", body := "") {
@@ -21,7 +25,7 @@ Class ClassPhraseMenu {
     this.AddToOrderedMapRecursive(this.topPhrase, keyParts, phrase)
   }
 
-  RunByShortcut(shortcut) {
+  RunByShortcut(shortcut, x := "", y := "") {
     if (this.phraseShortcutMap.Has(shortcut)) {
       phrase := this.phraseShortcutMap[shortcut]
       if (phrase.keys.Length < 1) {
@@ -31,7 +35,7 @@ Class ClassPhraseMenu {
     }
 
     this.ExecScript("Sleep(50)`nSend('" . shortcut . "')")
-    this.Show()
+    this.Show(x, y)
   }
 
   ExecScript(script, wait := false) {
@@ -77,7 +81,7 @@ Class ClassPhraseMenu {
   }
 
   StrShrink(t) {
-    return (StrLen(t) > 30) ? SubStr(t, 1, 30) . "..." : t
+    return (StrLen(t) > 60) ? SubStr(t, 1, 60) . "..." : t
   }
 
   CreateMenuFromOrderedMap(orderedMap) {
