@@ -17,10 +17,10 @@ Class ClassPhraseMenu {
     }
   }
 
-  AddPhrase(key, title := "", body := "") {
+  AddPhrase(key, title := "", body := "", iconFile := "", iconNumber := 0) {
     key := Trim(key)
     keyParts := StrSplit(key, "")
-    phrase := ClassPhrase(title, body)
+    phrase := ClassPhrase(title, body, iconFile, iconNumber)
     this.phraseShortcutMap[key] := phrase
     this.AddToOrderedMapRecursive(this.topPhrase, keyParts, phrase)
   }
@@ -56,7 +56,7 @@ Class ClassPhraseMenu {
     for i, value in keyParts {
       str .= value
     }
-    if (RegExMatch(str, "^\-")) { ; for seperator
+    if (RegExMatch(str, "^\-")) { ; for separator
       myOrderedMap.Set(str, ClassPhrase())
       return
     }
@@ -91,15 +91,27 @@ Class ClassPhraseMenu {
   }
 
   CreateMenuEntry(myMenu, key, phrase) {
+    titleShrink := this.StrShrink(phrase.title)
+    if (RegExMatch(titleShrink, StrUpper(key))) {
+      menuItemName := RegExReplace(titleShrink, StrUpper(key), "&" . StrUpper(key), , 1)
+    } else if (RegExMatch(titleShrink, StrLower(key))) {
+      menuItemName := RegExReplace(titleShrink, StrLower(key), "&" . StrLower(key), , 1)
+    } else {
+      menuItemName := titleShrink . " (&" . key . ")"
+    }
     if (phrase.keys.Length > 0) {
       subMenu := this.CreateMenuFromOrderedMap(phrase)
-      myMenu.Add("&" . key . " " . this.StrShrink(phrase.title), subMenu)
+      myMenu.Add(menuItemName, subMenu)
     } else {
       if (RegExMatch(key, "^\-")) {
         myMenu.Add("")
       } else {
-        myMenu.Add("&" . key . " " . this.StrShrink(phrase.title), (*) => phrase.Run())
+        myMenu.Add(menuItemName, (*) => phrase.Run())
       }
+    }
+
+    if (phrase.iconFile) {
+      myMenu.SetIcon(menuItemName, phrase.iconFile, phrase.iconNumber)
     }
   }
 }
