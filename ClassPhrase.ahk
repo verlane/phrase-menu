@@ -5,10 +5,11 @@
 Class ClassPhrase extends ClassOrderedMap {
   static className := "ClassPhrase"
 
-  __New(title := "", body := "", iconFile := "", iconNumber := 0) {
+  __New(title := "", body := "", isExecutable := false, iconFile := "", iconNumber := 0) {
     Super()
     this.title := title
     this.body := (body = "") ? title : body
+    this.isExecutable := isExecutable
     this.iconFile := iconFile
     this.iconNumber := iconNumber
   }

@@ -17,10 +17,10 @@ Class ClassPhraseMenu {
     }
   }
 
-  AddPhrase(key, title := "", body := "", iconFile := "", iconNumber := 0) {
+  AddPhrase(key, title := "", body := "", isExecutable := false, iconFile := "", iconNumber := 0) {
     key := Trim(key)
     keyParts := StrSplit(key, "")
-    phrase := ClassPhrase(title, body, iconFile, iconNumber)
+    phrase := ClassPhrase(title, body, isExecutable, iconFile, iconNumber)
     this.phraseShortcutMap[key] := phrase
     this.AddToOrderedMapRecursive(this.topPhrase, keyParts, phrase)
   }
@@ -28,13 +28,13 @@ Class ClassPhraseMenu {
   RunByShortcut(shortcut, x := "", y := "") {
     if (this.phraseShortcutMap.Has(shortcut)) {
       phrase := this.phraseShortcutMap[shortcut]
-      if (phrase.keys.Length < 1) {
+      if (phrase.keys.Length < 1 || phrase.isExecutable) {
         phrase.Run()
         return
       }
     }
 
-    this.ExecScript("Sleep(50)`nSend('" . shortcut . "')")
+    this.ExecScript('Sleep(300)`nSend("' . shortcut . '")')
     this.Show(x, y)
   }
 
@@ -92,10 +92,10 @@ Class ClassPhraseMenu {
 
   CreateMenuEntry(myMenu, key, phrase) {
     titleShrink := this.StrShrink(phrase.title)
-    if (RegExMatch(titleShrink, StrUpper(key))) {
-      menuItemName := RegExReplace(titleShrink, StrUpper(key), "&" . StrUpper(key), , 1)
-    } else if (RegExMatch(titleShrink, StrLower(key))) {
-      menuItemName := RegExReplace(titleShrink, StrLower(key), "&" . StrLower(key), , 1)
+    if (InStr(titleShrink, StrUpper(key), true)) {
+      menuItemName := StrReplace(titleShrink, StrUpper(key), "&" . StrUpper(key), true, , 1)
+    } else if (InStr(titleShrink, StrLower(key), true)) {
+      menuItemName := StrReplace(titleShrink, StrLower(key), "&" . StrLower(key), true, , 1)
     } else {
       menuItemName := titleShrink . " (&" . key . ")"
     }
