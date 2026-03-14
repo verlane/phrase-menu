@@ -132,6 +132,6 @@ Class ClassPhraseMenu {
   }
 
   BuildRunItemName(fullKey) {
-    return "상위 항목 실행"
+    return "Use Parent Item"
   }
 }
