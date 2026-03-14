@@ -6,10 +6,13 @@ Class ClassPhraseMenu {
   __New() {
     this.topPhrase := ClassPhrase()
     this.phraseShortcutMap := Map()
+    this.myMenu := ""
   }
 
   Show(x := "", y := "") {
-    this.myMenu := this.CreateMenuFromOrderedMap(this.topPhrase)
+    if (!this.myMenu) {
+      this.myMenu := this.CreateMenuFromOrderedMap(this.topPhrase)
+    }
     if (x && y) {
       this.myMenu.Show(x, y)
     } else {
@@ -23,6 +26,7 @@ Class ClassPhraseMenu {
     phrase := ClassPhrase(title, body, isExecutable, iconFile, iconNumber)
     this.phraseShortcutMap[key] := phrase
     this.AddToOrderedMapRecursive(this.topPhrase, keyParts, phrase)
+    this.myMenu := ""
   }
 
   RunByShortcut(shortcut, x := "", y := "") {
