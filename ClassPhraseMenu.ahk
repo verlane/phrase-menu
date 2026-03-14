@@ -60,7 +60,7 @@ Class ClassPhraseMenu {
     for i, value in keyParts {
       str .= value
     }
-    if (RegExMatch(str, "^\-")) { ; for separator
+    if (RegExMatch(str, "^\-")) {
       myOrderedMap.Set(str, ClassPhrase())
       return
     }
@@ -88,34 +88,50 @@ Class ClassPhraseMenu {
     return (StrLen(t) > 60) ? SubStr(t, 1, 60) . "..." : t
   }
 
-  CreateMenuFromOrderedMap(orderedMap) {
+  CreateMenuFromOrderedMap(orderedMap, prefix := "") {
     myMenu := Menu()
-    orderedMap.ForEach((key, phrase) => this.CreateMenuEntry(myMenu, key, phrase))
+    orderedMap.ForEach((key, phrase) => this.CreateMenuEntry(myMenu, key, phrase, prefix))
     return myMenu
   }
 
-  CreateMenuEntry(myMenu, key, phrase) {
-    titleShrink := this.StrShrink(phrase.title)
-    if (InStr(titleShrink, StrUpper(key), true)) {
-      menuItemName := StrReplace(titleShrink, StrUpper(key), "&" . StrUpper(key), true, , 1)
-    } else if (InStr(titleShrink, StrLower(key), true)) {
-      menuItemName := StrReplace(titleShrink, StrLower(key), "&" . StrLower(key), true, , 1)
-    } else {
-      menuItemName := titleShrink . " (&" . key . ")"
+  CreateMenuEntry(myMenu, key, phrase, prefix := "") {
+    if (RegExMatch(key, "^\-")) {
+      myMenu.Add("")
+      return
     }
+
+    fullKey := prefix . key
+    titleShrink := this.StrShrink(phrase.title)
+    menuItemName := this.BuildMenuItemName(key, titleShrink)
+
     if (phrase.keys.Length > 0) {
-      subMenu := this.CreateMenuFromOrderedMap(phrase)
+      subMenu := this.CreateMenuFromOrderedMap(phrase, fullKey)
+      if (phrase.isExecutable) {
+        subMenu.Add("")
+        runItemName := this.BuildRunItemName(fullKey)
+        subMenu.Add(runItemName, (*) => phrase.Run())
+      }
       myMenu.Add(menuItemName, subMenu)
     } else {
-      if (RegExMatch(key, "^\-")) {
-        myMenu.Add("")
-      } else {
-        myMenu.Add(menuItemName, (*) => phrase.Run())
-      }
+      myMenu.Add(menuItemName, (*) => phrase.Run())
     }
 
     if (phrase.iconFile) {
       myMenu.SetIcon(menuItemName, phrase.iconFile, phrase.iconNumber)
     }
+  }
+
+  BuildMenuItemName(key, titleShrink) {
+    if (InStr(titleShrink, StrUpper(key), true)) {
+      return StrReplace(titleShrink, StrUpper(key), "&" . StrUpper(key), true, , 1)
+    }
+    if (InStr(titleShrink, StrLower(key), true)) {
+      return StrReplace(titleShrink, StrLower(key), "&" . StrLower(key), true, , 1)
+    }
+    return titleShrink . " (&" . key . ")"
+  }
+
+  BuildRunItemName(fullKey) {
+    return "상위 항목 실행"
   }
 }
