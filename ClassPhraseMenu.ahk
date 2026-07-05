@@ -11,7 +11,7 @@ Class ClassPhraseMenu {
 
   Show(x := "", y := "") {
     if (!this.myMenu) {
-      this.myMenu := this.CreateMenuFromOrderedMap(this.topPhrase)
+      this.CreateMenu()
     }
     if (x && y) {
       this.myMenu.Show(x, y)
@@ -67,6 +67,12 @@ Class ClassPhraseMenu {
 
     currentKey := keyParts.RemoveAt(1)
     if (keyParts.Length == 0) {
+      ; A terminal key may collide with an existing internal node that already
+      ; holds child phrases (e.g. ';p' added after ';pub'/';pubr'). Carry those
+      ; children over so the value and the submenu can coexist on one node.
+      if (myOrderedMap.Has(currentKey)) {
+        myOrderedMap.Get(currentKey).ForEach((childKey, childPhrase) => message.Set(childKey, childPhrase))
+      }
       myOrderedMap.Set(currentKey, message)
     } else {
       if !myOrderedMap.Has(currentKey) {
@@ -86,6 +92,10 @@ Class ClassPhraseMenu {
 
   StrShrink(t) {
     return (StrLen(t) > 60) ? SubStr(t, 1, 60) . "..." : t
+  }
+
+  CreateMenu() {
+    this.myMenu := this.CreateMenuFromOrderedMap(this.topPhrase)
   }
 
   CreateMenuFromOrderedMap(orderedMap, prefix := "") {
